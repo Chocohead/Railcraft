@@ -9,6 +9,9 @@
  -----------------------------------------------------------------------------*/
 package mods.railcraft.common.modules;
 
+import org.apache.logging.log4j.Level;
+
+import ic2.api.info.Info;
 import ic2.api.recipe.Recipes;
 import mods.railcraft.api.core.RailcraftModule;
 import mods.railcraft.common.blocks.RailcraftBlocks;
@@ -21,6 +24,7 @@ import mods.railcraft.common.plugins.forge.CraftingPlugin;
 import mods.railcraft.common.plugins.ic2.IC2Plugin;
 import mods.railcraft.common.plugins.misc.Mod;
 import mods.railcraft.common.util.inventory.InvTools;
+import mods.railcraft.common.util.misc.Game;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -145,6 +149,47 @@ public class ModuleIC2 extends RailcraftModulePayload {
                     detector = new ItemStack(Blocks.STONE_PRESSURE_PLATE);
 
                 if (!InvTools.isEmpty(battery) && !InvTools.isEmpty(machine)) {
+                	if (detector == null || detector.isEmpty() || detector.getItem() == null || detector.getCount() <= 0) {
+                		//Possible conditions for IC2 to decide a stack is empty
+                		StringBuilder error = new StringBuilder("Bad detector: ");
+
+                		error.append(detector);
+                		error.append('\n');
+                		error.append("Detector enable state: ");
+                		error.append(RailcraftBlocks.DETECTOR.isEnabled());
+                		error.append(", load state: ");
+                		error.append(RailcraftBlocks.DETECTOR.isLoaded());
+                		error.append('\n');
+                		error.append("Split: ");
+                		if (RailcraftBlocks.DETECTOR.isLoaded()) {
+                			error.append(EnumDetector.ADVANCED.block());
+                			error.append(' ');
+                			error.append(EnumDetector.ADVANCED.ordinal());
+                		} else {
+                			error.append(Blocks.STONE_PRESSURE_PLATE);
+                		}
+                		error.append('\n');
+                		error.append("Battery: ");
+                		error.append(battery);
+                		error.append(", Machine: ");
+                		error.append(machine);
+                		error.append('\n');
+                		error.append("Output: ");
+                		error.append(ManipulatorVariant.ENERGY_LOADER.getStack());
+
+                		try {
+                			//Try show the error via the IC2 pop-up window
+                			Object ic2 = Info.ic2ModInstance;
+                    		Object platform = ic2.getClass().getField("platform").get(ic2);
+                    		platform.getClass().getMethod("displayError", String.class, Object[].class).invoke(platform, error.toString(), new Object[0]);
+                		} catch (Exception e) {
+                			//This shouldn't happen, but have a fallback anyway
+                			throw new RuntimeException(error.toString().replace("\n", System.getProperty("line.separator")), e);
+                		}
+                	} else {
+                		Game.log(Level.INFO, "Detector is as needed");
+                	}
+                	
                     if (ManipulatorVariant.ENERGY_LOADER.isAvailable())
                         Recipes.advRecipes.addRecipe(ManipulatorVariant.ENERGY_LOADER.getStack(),
                                 "BLB",
