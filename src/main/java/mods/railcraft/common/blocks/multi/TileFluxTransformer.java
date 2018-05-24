@@ -10,6 +10,7 @@
 
 package mods.railcraft.common.blocks.multi;
 
+import mods.railcraft.common.blocks.RailcraftBlocks;
 import mods.railcraft.common.blocks.charge.ChargeManager;
 import mods.railcraft.common.blocks.charge.IChargeBlock;
 import mods.railcraft.common.gui.EnumGui;
@@ -20,6 +21,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -27,15 +29,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TileFluxTransformer extends TileMultiBlock implements IEnergyStorage {
+public final class TileFluxTransformer extends TileMultiBlock<TileFluxTransformer> implements IEnergyStorage {
 
     public static final double EU_RF_RATIO = 4;
     public static final double EFFICIENCY = 0.8F;
     private static final List<MultiBlockPattern> patterns = new ArrayList<>();
 
     private IChargeBlock.ChargeBattery battery;
-
-
 
     static {
         char[][][] map = {
@@ -71,14 +71,14 @@ public class TileFluxTransformer extends TileMultiBlock implements IEnergyStorag
     public static void placeFluxTransformer(World world, BlockPos pos) {
         MultiBlockPattern pattern = TileFluxTransformer.patterns.get(0);
         Map<Character, IBlockState> blockMapping = new HashMap<>();
-//        blockMapping.put('B', EnumMachineEpsilon.FLUX_TRANSFORMER.getDefaultState()); TODO
+        blockMapping.put('B', RailcraftBlocks.FLUX_TRANSFORMER.getDefaultState());
         pattern.placeStructure(world, pos, blockMapping);
     }
 
     @Nullable
     IChargeBlock.ChargeBattery getMasterBattery() {
         if (isStructureValid()) {
-            return ((TileFluxTransformer) getMasterBlock()).getBattery();
+            return getMasterBlock().getBattery();
         }
         return null;
     }
@@ -95,7 +95,7 @@ public class TileFluxTransformer extends TileMultiBlock implements IEnergyStorag
         setWorld(worldIn);
     }
 
-    @Nullable
+    @NotNull
     @Override
     public EnumGui getGui() {
         return null;
@@ -143,13 +143,13 @@ public class TileFluxTransformer extends TileMultiBlock implements IEnergyStorag
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         return capability == CapabilityEnergy.ENERGY || super.hasCapability(capability, facing);
     }
 
     @Nullable
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityEnergy.ENERGY) {
             return CapabilityEnergy.ENERGY.cast(this);
         }

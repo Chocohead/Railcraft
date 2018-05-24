@@ -60,13 +60,13 @@ public final class Railcraft {
     public static final String NAME = "Railcraft";
     public static final String MOD_ID = "railcraft";
     public static final String MC_VERSION = "[1.12.2,1.13)";
-    public static final RootCommand rootCommand = new RootCommand();
+    public static final RootCommand ROOT_COMMAND = new RootCommand();
     static final String VERSION = "@VERSION@";
     @Instance(Railcraft.MOD_ID)
     public static Railcraft instance;
     //    public int totalMultiBlockUpdates = 0;
 //    public int ticksSinceLastMultiBlockPrint = 0;
-    @SidedProxy(clientSide = "mods.railcraft.client.core.ClientProxy", serverSide = "mods.railcraft.common.core.CommonProxy")
+    @SidedProxy(modId = Railcraft.MOD_ID, clientSide = "mods.railcraft.client.core.ClientProxy", serverSide = "mods.railcraft.common.core.CommonProxy")
     public static CommonProxy proxy;
     private File configFolder;
 
@@ -197,7 +197,7 @@ public final class Railcraft {
     @Mod.EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
         CommandHandler commandManager = (CommandHandler) event.getServer().getCommandManager();
-        commandManager.registerCommand(rootCommand);
+        commandManager.registerCommand(ROOT_COMMAND);
     }
 
     @Mod.EventHandler

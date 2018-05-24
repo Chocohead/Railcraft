@@ -10,7 +10,6 @@
 package mods.railcraft.common.blocks.multi;
 
 import mods.railcraft.common.blocks.RailcraftBlocks;
-import mods.railcraft.common.blocks.machine.TileTank;
 import mods.railcraft.common.fluids.FluidItemHelper;
 import mods.railcraft.common.fluids.FluidTools;
 import mods.railcraft.common.fluids.Fluids;
@@ -35,8 +34,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fluids.FluidStack;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +44,7 @@ import java.util.Map;
 /**
  * @author CovertJaguar <http://www.railcraft.info>
  */
-public class TileTankWater extends TileTank {
+public final class TileTankWater extends TileTank<TileTankWater> {
 
     private static final int OUTPUT_RATE = 40;
     private static final int TANK_CAPACITY = FluidTools.BUCKET_VOLUME * 400;
@@ -59,7 +58,7 @@ public class TileTankWater extends TileTank {
     private static final int SLOT_OUTPUT = 1;
     private static final int[] SLOTS = InvTools.buildSlotArray(0, 2);
     private static final EnumFacing[] LIQUID_OUTPUTS = {EnumFacing.DOWN, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.NORTH, EnumFacing.SOUTH};
-    private static final List<MultiBlockPattern> patterns = new ArrayList<MultiBlockPattern>();
+    private static final List<MultiBlockPattern> patterns = new ArrayList<>();
     private final FilteredTank tank;
 
     static {
@@ -114,7 +113,7 @@ public class TileTankWater extends TileTank {
 
     public static void placeWaterTank(World world, BlockPos pos, int water) {
         MultiBlockPattern pattern = TileTankWater.patterns.get(0);
-        Map<Character, IBlockState> blockMapping = new HashMap<Character, IBlockState>();
+        Map<Character, IBlockState> blockMapping = new HashMap<>();
         blockMapping.put('B', RailcraftBlocks.TANK_WATER.getDefaultState());
         TileEntity tile = pattern.placeStructure(world, pos, blockMapping);
         if (tile instanceof TileTankWater) {
@@ -175,19 +174,19 @@ public class TileTankWater extends TileTank {
                 }
 
                 //FIXME
-//                if (clock % FluidTools.BUCKET_FILL_TIME == 0)
-//                    FluidTools.processContainers(tankManager.get(0), this, SLOT_INPUT, SLOT_OUTPUT);
+                if (clock % FluidTools.BUCKET_FILL_TIME == 0)
+                    FluidTools.processContainers(tankManager.get(0), this, SLOT_INPUT, SLOT_OUTPUT);
             }
 
             TankManager tMan = getTankManager();
-            if (tMan != null)
+            if (!tMan.isEmpty())
                 tMan.push(tileCache, Predicates.notInstanceOf(getClass()), LIQUID_OUTPUTS, 0, OUTPUT_RATE);
         }
     }
 
     @Override
     public boolean openGui(EntityPlayer player) {
-        TileMultiBlock mBlock = getMasterBlock();
+        TileTankWater mBlock = getMasterBlock();
         if (mBlock != null) {
             GuiHandler.openGui(EnumGui.TANK, player, world, mBlock.getPos());
             return true;
@@ -221,7 +220,7 @@ public class TileTankWater extends TileTank {
         return false;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public EnumGui getGui() {
         return EnumGui.TANK;

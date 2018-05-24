@@ -9,19 +9,20 @@
 package mods.railcraft.common.blocks.multi;
 
 import mods.railcraft.common.gui.EnumGui;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 
 /**
  * @author CovertJaguar <http://www.railcraft.info>
  */
-public class TileBoilerTankHigh extends TileBoilerTank {
+public final class TileBoilerTankHigh extends TileBoilerTank<TileBoilerTankHigh> {
 
     public TileBoilerTankHigh() {
         super();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public EnumGui getGui() {
         return EnumGui.TANK;

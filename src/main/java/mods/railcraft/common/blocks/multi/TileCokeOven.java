@@ -10,7 +10,6 @@
 package mods.railcraft.common.blocks.multi;
 
 import mods.railcraft.api.crafting.ICokeOvenRecipe;
-import mods.railcraft.api.crafting.RailcraftCraftingManager;
 import mods.railcraft.common.blocks.RailcraftBlocks;
 import mods.railcraft.common.fluids.FluidItemHelper;
 import mods.railcraft.common.fluids.FluidTools;
@@ -35,6 +34,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ import java.util.Map;
 
 import static mods.railcraft.common.util.inventory.InvTools.*;
 
-public class TileCokeOven extends TileMultiBlockOven implements ISidedInventory {
+public final class TileCokeOven extends TileMultiBlockOven<TileCokeOven> implements ISidedInventory {
 
     public static final int SLOT_INPUT = 0;
     public static final int SLOT_OUTPUT = 1;
@@ -122,12 +122,11 @@ public class TileCokeOven extends TileMultiBlockOven implements ISidedInventory 
         }
     }
 
-    @Nullable
     public TankManager getTankManager() {
-        TileCokeOven mBlock = (TileCokeOven) getMasterBlock();
+        TileCokeOven mBlock = getMasterBlock();
         if (mBlock != null)
             return mBlock.tankManager;
-        return tankManager;
+        return TankManager.NIL;
     }
 
     @Override
@@ -144,20 +143,20 @@ public class TileCokeOven extends TileMultiBlockOven implements ISidedInventory 
     }
 
     @Override
-    public boolean blockActivated(EntityPlayer player, EnumHand hand, @Nullable ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
+    public boolean blockActivated(EntityPlayer player, EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
         return (isStructureValid() && FluidTools.interactWithFluidHandler(player, hand, getTankManager())) || super.blockActivated(player, hand, heldItem, side, hitX, hitY, hitZ);
     }
 
     @Override
     public int getTotalCookTime() {
-        TileCokeOven mBlock = (TileCokeOven) getMasterBlock();
+        TileCokeOven mBlock = getMasterBlock();
         if (mBlock != null)
             return mBlock.cookTimeTotal;
         return 3600;
     }
 
     public int getBurnProgressScaled(int i) {
-        return ((getTotalCookTime() - getCookTime()) * i) / getTotalCookTime();
+        return ((getTotalCookTime() - getMasterCookTime()) * i) / getTotalCookTime();
     }
 
     @Override
@@ -190,7 +189,7 @@ public class TileCokeOven extends TileMultiBlockOven implements ISidedInventory 
                                 cookTime += COOK_STEP_LENGTH;
                                 setCooking(true);
 
-                                if (cookTime >= recipe.getCookTime()) {
+                                if (cookTime >= cookTimeTotal) {
                                     cookTime = 0;
                                     finishedAt = clock;
                                     decrStackSize(SLOT_INPUT, 1);
@@ -236,7 +235,7 @@ public class TileCokeOven extends TileMultiBlockOven implements ISidedInventory 
 
     @Override
     public boolean openGui(EntityPlayer player) {
-        TileMultiBlock masterBlock = getMasterBlock();
+        TileCokeOven masterBlock = getMasterBlock();
         if (masterBlock != null && isStructureValid()) {
             GuiHandler.openGui(EnumGui.COKE_OVEN, player, world, masterBlock.getPos());
             return true;
@@ -294,13 +293,13 @@ public class TileCokeOven extends TileMultiBlockOven implements ISidedInventory 
     @Override
     public IBlockState getActualState(IBlockState base) {
         return getPatternMarker() == 'W'
-                ? isBurning()
+                ? isMasterBurning()
                 ? base.withProperty(BlockCokeOven.ICON, 2)
                 : base.withProperty(BlockCokeOven.ICON, 1)
                 : base.withProperty(BlockCokeOven.ICON, 0);
     }
 
-    @Nullable
+    @NotNull
     @Override
     public EnumGui getGui() {
         return EnumGui.COKE_OVEN;
